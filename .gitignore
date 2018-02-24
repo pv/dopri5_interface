@@ -1,0 +1,11 @@
+/doc
+*~
+CMakeFiles
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+example
+example_original
+CMakeDoxyfile.in
+CMakeDoxygenDefaults.cmake
+Doxyfile
