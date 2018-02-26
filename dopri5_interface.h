@@ -352,7 +352,7 @@ namespace dopri5 {
                     return !(m_xpos < m_xend);
                 }
 
-            const YIterator end() const { return m_ypos; }
+            const XIterator end() const { return m_xpos; }
         };
     }
 
@@ -369,15 +369,20 @@ namespace dopri5 {
     //! \return Iterator pointing after the last stored y-value.
     template <typename XIterator, typename YIterator, typename Vector,
               typename Fcn = typename detail::default_types<Vector>::func_type>
-    inline YIterator solve_at(XIterator xbegin, XIterator xend,
+    inline XIterator solve_at(XIterator xbegin, XIterator xend,
                               Vector &y0, Fcn& fcn, YIterator ybegin,
-                              solver_parameters params = {})
+                              solver_parameters params = {},
+                              success_status *status = 0)
     {
         if (xbegin >= xend) {
-            return ybegin;
+            return xbegin;
         }
         detail::storage_solout<XIterator, YIterator, Vector> solout(xbegin, xend, ybegin);
-        solve(*xbegin, *(xend - 1), y0, fcn, solout, params);
+        success_status s;
+        s = solve(*xbegin, *(xend - 1), y0, fcn, solout, params);
+        if (status) {
+            *status = s;
+        }
         return solout.end();
     }
 

@@ -29,12 +29,12 @@ void example_scalar()
 
     std::vector<double> xs({0, 0.25, 0.5, 0.75, 1});
     std::vector<double> ys(xs.size());
-    std::vector<double>::iterator yend;
+    std::vector<double>::iterator xend;
 
     double y0 = 1;
-    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, my_func, ys.begin());
+    xend = dopri5::solve_at(xs.begin(), xs.end(), y0, my_func, ys.begin());
 
-    for (int i = 0; i < yend - ys.begin(); ++i) {
+    for (int i = 0; i < xend - xs.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
                   << "; y[" << i << "] = " << ys[i] << std::endl;
     }
@@ -51,7 +51,7 @@ void example_array()
 
     std::vector<double> xs({0, 0.25, 0.5, 0.75, 1});
     std::vector<double[2]> ys(xs.size());
-    std::vector<double[2]>::iterator yend;
+    std::vector<double>::iterator xend;
 
     auto func = [](double x, const auto& y, auto& dy) {
         dy[0] = y[0];
@@ -59,9 +59,9 @@ void example_array()
     };
 
     double y0[2] = {1, 2};
-    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
+    xend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
 
-    for (int i = 0; i < yend - ys.begin(); ++i) {
+    for (int i = 0; i < xend - xs.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
                   << "; y[" << i << "] = {"
                   << ys[i][0] << ", " << ys[i][1]
@@ -80,7 +80,7 @@ void example_array_reverse()
 
     std::vector<double> xs({1, 0.75, 0.5, 0.25, 0});
     std::vector<double[2]> ys(xs.size());
-    std::vector<double[2]>::iterator yend;
+    std::vector<double>::iterator xend;
 
     auto func = [](double x, const auto& y, auto& dy) {
         dy[0] = y[0];
@@ -88,9 +88,9 @@ void example_array_reverse()
     };
 
     double y0[2] = {1, 2};
-    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
+    xend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
 
-    for (int i = 0; i < yend - ys.begin(); ++i) {
+    for (int i = 0; i < xend - xs.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
                   << "; y[" << i << "] = {"
                   << ys[i][0] << ", " << ys[i][1]
