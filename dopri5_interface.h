@@ -250,6 +250,7 @@ namespace dopri5 {
     //! \param xend  Position to solve up to. If xend < x0, integration proceeds
     //!     to negative direction
     //! \param y0  Initial value of the solution vector.
+    //!     Note that this value is modified by the routine.
     //! \param fcn  Callback function `f(double x, ConstVector& y, Vector& dy)`
     //!     providing the derivative
     //! \param solout  Callback function
@@ -359,30 +360,23 @@ namespace dopri5 {
     //!
     //! \param xbegin  Start for iterator containing x-coordinates.
     //! \param xend  End for iterator of x-coordinates.
-    //! \param ybegin  Start for iterator to store solutions. The initial value
-    //!     `y0 = *ybegin` should be stored in the first entry.
+    //! \param y0  Initial value of the solution vector.
+    //!     Note that this value is modified by the routine.
     //! \param fcn  Callback function `f(double x, ConstVector& y, Vector& dy)`
     //!     providing the derivative.
+    //! \param ybegin  Start for iterator to store solutions.
     //! \param params  Solver parameters.
     //! \return Iterator pointing after the last stored y-value.
-    template <typename XIterator, typename YIterator,
-              typename Vector = typename YIterator::value_type,
+    template <typename XIterator, typename YIterator, typename Vector,
               typename Fcn = typename detail::default_types<Vector>::func_type>
     inline YIterator solve_at(XIterator xbegin, XIterator xend,
-                              YIterator ybegin,
-                              Fcn& fcn, solver_parameters params = {})
+                              Vector &y0, Fcn& fcn, YIterator ybegin,
+                              solver_parameters params = {})
     {
         if (xbegin >= xend) {
             return ybegin;
         }
         detail::storage_solout<XIterator, YIterator, Vector> solout(xbegin, xend, ybegin);
-
-        // Make a copy of y0, because it is modified
-        typename YIterator::value_type y0;
-        detail::ravel<typename YIterator::value_type> ys0_ravel(*ybegin);
-        ys0_ravel.copy_into(y0);
-
-        // Solve
         solve(*xbegin, *(xend - 1), y0, fcn, solout, params);
         return solout.end();
     }
@@ -471,9 +465,6 @@ namespace dopri5 {
             //! Return a reference to the object.
             arg_type obj() { return *m_obj; }
 
-            //! Copy the data into a different object
-            void copy_into(arg_type y) { y = *m_obj; }
-
             //! Create a new object of the same size as `y0`
             static return_type empty_like(const Scalar *y0) { return 0; }
         };
@@ -535,12 +526,6 @@ namespace dopri5 {
             Double* ptr() { return reinterpret_cast<Double *>(m_obj); }
 
             arg_type obj() { return m_obj; }
-
-            void copy_into(Scalar *y) {
-                for (size_t i = 0; i < SZ; ++i) {
-                    y[i] = m_obj[i];
-                }
-            }
 
             // empty_like cannot be defined --- the return_type mismatch ensures
             // a compiler error.
@@ -609,9 +594,6 @@ namespace dopri5 {
             size_t size() { return m_map.size() * sizeof(Scalar) / sizeof(Double); }
             Double* ptr() { return reinterpret_cast<Double *>(m_map.data()); }
             arg_type obj() { return m_map; }
-            void copy_into(arg_type y) {
-                y = m_map;
-            }
 
             static return_type empty_like(const Matrix *y0) {
                 if (Matrix::RowsAtCompileTime != -1 &&

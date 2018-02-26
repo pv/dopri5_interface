@@ -48,9 +48,8 @@ A simple example, with output into a container:
         dy[1] = -y[1];
     };
 
-    ys[0][0] = 1;
-    ys[0][1] = 2;
-    yend = dopri5::solve_at(xs.begin(), xs.end(), ys.begin(), func);
+    double y0[2] = {1, 2};
+    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
 
     for (int i = 0; i < yend - ys.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]

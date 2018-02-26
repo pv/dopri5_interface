@@ -31,8 +31,8 @@ void example_scalar()
     std::vector<double> ys(xs.size());
     std::vector<double>::iterator yend;
 
-    ys[0] = 1;
-    yend = dopri5::solve_at(xs.begin(), xs.end(), ys.begin(), my_func);
+    double y0 = 1;
+    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, my_func, ys.begin());
 
     for (int i = 0; i < yend - ys.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
@@ -58,9 +58,8 @@ void example_array()
         dy[1] = -y[1];
     };
 
-    ys[0][0] = 1;
-    ys[0][1] = 2;
-    yend = dopri5::solve_at(xs.begin(), xs.end(), ys.begin(), func);
+    double y0[2] = {1, 2};
+    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
 
     for (int i = 0; i < yend - ys.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
@@ -88,9 +87,8 @@ void example_array_reverse()
         dy[1] = -y[1];
     };
 
-    ys[0][0] = 1;
-    ys[0][1] = 2;
-    yend = dopri5::solve_at(xs.begin(), xs.end(), ys.begin(), func);
+    double y0[2] = {1, 2};
+    yend = dopri5::solve_at(xs.begin(), xs.end(), y0, func, ys.begin());
 
     for (int i = 0; i < yend - ys.begin(); ++i) {
         std::cout << "x[" << i << "] = " << xs[i]
