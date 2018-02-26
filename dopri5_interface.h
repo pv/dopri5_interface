@@ -236,7 +236,8 @@ namespace dopri5 {
 #else
             dense_solution<Vector> sol(*nr, y, con, icomp, nd, 0, 0, y0);
 #endif
-            bool do_exit = (*callback)(*xold, *x, sol);
+            const_ravel<Vector> y_ravel(*n, y, y0);
+            bool do_exit = (*callback)(*x, *xold, y_ravel.obj(), sol);
             if (do_exit) {
                 *irtrn = -1;
             }
@@ -246,13 +247,15 @@ namespace dopri5 {
     //! Solve a differential equation, producing dense output.
     //!
     //! \param x0  Start position for the solution.
-    //! \param xend  Position to solve up to.
+    //! \param xend  Position to solve up to. If xend < x0, integration proceeds
+    //!     to negative direction
     //! \param y0  Initial value of the solution vector.
     //! \param fcn  Callback function `f(double x, ConstVector& y, Vector& dy)`
-    //!             providing the derivative
+    //!     providing the derivative
     //! \param solout  Callback function
-    //!                `solout(double xa, double xb, const dense_output<Vector>& sol)`
-    //!                to receive the dense output.
+    //!     `solout(double x, double xprev, ConstVector& y, const dense_output<Vector>& sol)`
+    //!     to receive the dense output in the interval [xprev, x]
+    //!     (or [x, xprev] if negative integration direction).
     //! \param params  Solver parameters.
     template <typename Vector,
               typename Fcn = typename detail::default_types<Vector>::func_type,
@@ -321,16 +324,21 @@ namespace dopri5 {
                 : m_xpos(xbegin), m_xend(xend), m_ypos(ybegin)
                 {}
 
-            bool operator()(double xa, double xb,
+            bool operator()(double x, double xold,
+                            auto& value,
                             const dense_solution<typename YIterator::value_type>&
                             sol)
                 {
-                    while (m_xpos < m_xend && *m_xpos <= xb) {
+                    while (m_xpos < m_xend) {
+                        if (xold <= x && !(*m_xpos <= x) ||
+                            xold >= x && !(*m_xpos >= x)) {
+                            break;
+                        }
                         sol.get(*m_xpos, *m_ypos);
                         ++m_xpos;
                         ++m_ypos;
                     }
-                    return (m_xpos >= m_xend);
+                    return !(m_xpos < m_xend);
                 }
 
             const YIterator end() const { return m_ypos; }
@@ -342,9 +350,9 @@ namespace dopri5 {
     //! \param xbegin  Start for iterator containing x-coordinates.
     //! \param xend  End for iterator of x-coordinates.
     //! \param ybegin  Start for iterator to store solutions. The initial value
-    //!                `y0 = *ybegin` should be stored in the first entry.
+    //!     `y0 = *ybegin` should be stored in the first entry.
     //! \param fcn  Callback function `f(double x, ConstVector& y, Vector& dy)`
-    //!             providing the derivative.
+    //!     providing the derivative.
     //! \param params  Solver parameters.
     //! \return Iterator pointing after the last stored y-value.
     template <typename XIterator, typename YIterator, typename Fcn>

@@ -72,6 +72,36 @@ void example_array()
 
 
 //
+// Simple array example, with integration to negative direction
+//
+
+void example_array_reverse()
+{
+    print_banner("example_array_reverse");
+
+    std::vector<double> xs({1, 0.75, 0.5, 0.25, 0});
+    std::vector<double[2]> ys(xs.size());
+    std::vector<double[2]>::iterator yend;
+
+    auto func = [](double x, const auto& y, auto& dy) {
+        dy[0] = y[0];
+        dy[1] = -y[1];
+    };
+
+    ys[0][0] = 1;
+    ys[0][1] = 2;
+    yend = dopri5::solve_at(xs.begin(), xs.end(), ys.begin(), func);
+
+    for (int i = 0; i < yend - ys.begin(); ++i) {
+        std::cout << "x[" << i << "] = " << xs[i]
+                  << "; y[" << i << "] = {"
+                  << ys[i][0] << ", " << ys[i][1]
+                  << "}" << std::endl;
+    }
+}
+
+
+//
 // Example using Eigen matrices
 //
 
@@ -94,13 +124,13 @@ void example_eigen()
         };
 
     double last_x = 0;
-    auto solout = [&] (double xa, double xb, const auto& sol) {
-        if (xb == 0 || xb == 1 || xb > last_x + 0.2) {
-            std::cout << xa << "..." << xb
-                      << ": y(" << xb << ") = " << std::endl
-                      << sol(xb)
+    auto solout = [&] (double x, double xprev, auto& y, const auto& sol) {
+        if (x == 0 || x == 1 || x > last_x + 0.2) {
+            std::cout << xprev << "..." << x
+                      << ": y(" << x << ") = " << std::endl
+                      << sol(x)
                       << std::endl << std::endl;
-            last_x = xb;
+            last_x = x;
         }
         return false;
     };
@@ -110,7 +140,7 @@ void example_eigen()
 
 
 //
-// Functor example (compiler can inline the functor to the callback)
+// Functor example (with integration to reverse direction)
 //
 
 //!\private
@@ -129,12 +159,12 @@ private:
 public:
     my_functor_solout() : last_x(0) {}
 
-    bool operator()(double xa, double xb, const auto& sol)
+    bool operator()(double x, double xprev, auto& y, const auto& sol)
         {
-            if (xb == 0 || xb == 1 || xb > last_x + 0.2) {
-                std::cout << "y(" << xb << ") = " << sol(xb)
-                          << " (exact: " << exp(-xb) << ")" << std::endl;
-                last_x = xb;
+            if (x == 0 || x == 1 || x >= last_x + 0.2) {
+                std::cout << "y(" << x << ") = " << y
+                          << " (exact: " << exp(-x) << ")" << std::endl;
+                last_x = x;
             }
             return false;
         }
@@ -170,6 +200,7 @@ int main()
 {
     example_scalar();
     example_array();
+    example_array_reverse();
     example_eigen();
     example_functors();
     return 0;
