@@ -345,7 +345,7 @@ namespace dopri5 {
                             (xold >= x && !(*m_xpos >= x))) {
                             break;
                         }
-                        storage_get_solution(x, sol, m_ypos);
+                        storage_get_solution(*m_xpos, sol, m_ypos);
                         ++m_xpos;
                         ++m_ypos;
                     }
