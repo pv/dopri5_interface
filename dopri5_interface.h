@@ -320,7 +320,9 @@ namespace dopri5 {
 
         //! \brief Solout functor that stores values of the solution evaluated
         //! at specific points into an iterable.
-        template <typename XIterator, typename YIterator>
+        template <typename XIterator,
+                  typename YIterator,
+                  typename Vector = typename YIterator::value_type>
         class storage_solout
         {
         private:
@@ -335,12 +337,11 @@ namespace dopri5 {
 
             bool operator()(double x, double xold,
                             auto& value,
-                            const dense_solution<typename YIterator::value_type>&
-                            sol)
+                            const dense_solution<Vector>& sol)
                 {
                     while (m_xpos < m_xend) {
-                        if (xold <= x && !(*m_xpos <= x) ||
-                            xold >= x && !(*m_xpos >= x)) {
+                        if ((xold <= x && !(*m_xpos <= x)) ||
+                            (xold >= x && !(*m_xpos >= x))) {
                             break;
                         }
                         storage_get_solution(x, sol, m_ypos);
@@ -364,7 +365,9 @@ namespace dopri5 {
     //!     providing the derivative.
     //! \param params  Solver parameters.
     //! \return Iterator pointing after the last stored y-value.
-    template <typename XIterator, typename YIterator, typename Fcn>
+    template <typename XIterator, typename YIterator,
+              typename Vector = typename YIterator::value_type,
+              typename Fcn = typename detail::default_types<Vector>::func_type>
     inline YIterator solve_at(XIterator xbegin, XIterator xend,
                               YIterator ybegin,
                               Fcn& fcn, solver_parameters params = {})
@@ -372,7 +375,7 @@ namespace dopri5 {
         if (xbegin >= xend) {
             return ybegin;
         }
-        detail::storage_solout<XIterator, YIterator> solout(xbegin, xend, ybegin);
+        detail::storage_solout<XIterator, YIterator, Vector> solout(xbegin, xend, ybegin);
 
         // Make a copy of y0, because it is modified
         typename YIterator::value_type y0;
