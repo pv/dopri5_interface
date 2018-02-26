@@ -309,6 +309,15 @@ namespace dopri5 {
 
     //! \internal
     namespace detail {
+        //! Solution getter (can be specialized)
+        template <typename YIterator, typename Vector>
+        inline void storage_get_solution(double x,
+                                         const dense_solution<Vector> &sol,
+                                         YIterator out)
+        {
+            sol.get(x, *out);
+        }
+
         //! \brief Solout functor that stores values of the solution evaluated
         //! at specific points into an iterable.
         template <typename XIterator, typename YIterator>
@@ -334,7 +343,7 @@ namespace dopri5 {
                             xold >= x && !(*m_xpos >= x)) {
                             break;
                         }
-                        sol.get(*m_xpos, *m_ypos);
+                        storage_get_solution(x, sol, m_ypos);
                         ++m_xpos;
                         ++m_ypos;
                     }
