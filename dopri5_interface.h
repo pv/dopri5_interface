@@ -366,7 +366,7 @@ namespace dopri5 {
     //!     providing the derivative.
     //! \param ybegin  Start for iterator to store solutions.
     //! \param params  Solver parameters.
-    //! \return Iterator pointing after the last stored y-value.
+    //! \return Iterator pointing after the last stored x-value.
     template <typename Vector, typename XIterator, typename YIterator,
               typename Fcn = typename detail::default_types<Vector>::func_type>
     inline XIterator solve_at(XIterator xbegin, XIterator xend,
