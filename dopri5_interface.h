@@ -359,6 +359,9 @@ namespace dopri5 {
     //! Solve a differential equation, storing the solution in an iterable.
     //!
     //! \param xbegin  Start for iterator containing x-coordinates.
+    //!     They must be sorted in the order encountered during the integration,
+    //!     i.e. ascending if integrating from left to right, and descending if
+    //!     integrating from right to left.
     //! \param xend  End for iterator of x-coordinates.
     //! \param y0  Initial value of the solution vector.
     //!     Note that this value is modified by the routine.
@@ -367,10 +370,17 @@ namespace dopri5 {
     //! \param ybegin  Start for iterator to store solutions.
     //! \param params  Solver parameters.
     //! \param status  Final exit status (ignored if null).
+    //! \param xbreak_begin  Start for iterator containing critical
+    //!     x-breakpoints. They must be sorted in the order encountered during
+    //!     the integration.
+    //! \param xbreak_end  End for iterator containing critical x-breakpoints.
     //! \return Iterator pointing after the last stored x-value.
     template <typename Vector, typename XIterator, typename YIterator,
+              typename XIterator2,
               typename Fcn = typename detail::default_types<Vector>::func_type>
     inline XIterator solve_at(XIterator xbegin, XIterator xend,
+                              XIterator2 xbreak_begin,
+                              XIterator2 xbreak_end,
                               Vector &y0, Fcn& fcn, YIterator ybegin,
                               solver_parameters params = {},
                               success_status *status = 0)
@@ -379,12 +389,53 @@ namespace dopri5 {
             return xbegin;
         }
         detail::storage_solout<XIterator, YIterator, Vector> solout(xbegin, xend, ybegin);
-        success_status s;
-        s = solve(*xbegin, *(xend - 1), y0, fcn, solout, params);
+        success_status s = success;
+
+        double x = *xbegin;
+        double x_final = *(xend - 1);
+        bool ascending = !(x_final < x);
+
+        // Integrate over breakpoints
+        XIterator2 xbreak_pos(xbreak_begin);
+
+        while (xbreak_pos < xbreak_end && ((ascending && *xbreak_pos < x_final) ||
+                                           (!ascending && *xbreak_pos > x_final))) {
+            if ((ascending && *xbreak_pos <= x) ||
+                    (!ascending && *xbreak_pos >= x)) {
+                ++xbreak_pos;
+                continue;
+            }
+
+            s = solve(x, *xbreak_pos, y0, fcn, solout, params);
+            x = *xbreak_pos;
+            if (s != success) {
+                break;
+            }
+
+            ++xbreak_pos;
+        }
+
+        // Integrate to end
+        if (s == success) {
+            s = solve(x, x_final, y0, fcn, solout, params);
+        }
+
         if (status) {
             *status = s;
         }
         return solout.end();
+    }
+
+    template <typename Vector, typename XIterator, typename YIterator,
+              typename Fcn = typename detail::default_types<Vector>::func_type>
+    inline XIterator solve_at(XIterator xbegin, XIterator xend,
+                              Vector &y0, Fcn& fcn, YIterator ybegin,
+                              solver_parameters params = {},
+                              success_status *status = 0)
+    {
+        double *none = 0;
+        return solve_at<Vector,XIterator,YIterator,double*,Fcn>(
+            xbegin, xend, none, none, y0, fcn, ybegin, params, status);
     }
 
     //

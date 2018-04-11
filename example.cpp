@@ -180,6 +180,44 @@ void example_functors()
 
 
 //
+// Example with breakpoints
+//
+
+void example_breakpoints()
+{
+    print_banner("example_breakpoints");
+
+    std::vector<double> xs({0, 5, 10});
+    std::vector<double> ys(xs.size());
+    std::vector<double>::iterator xend;
+
+    // Inform the solver about a sharp feature
+    std::vector<double> xbreak({4.9, 5.1});
+
+    auto func = [](double x, const auto& y, auto& dy) {
+        if (x > 4.9 && x < 5.1) {
+            dy = 1;
+        }
+        else {
+            dy = 0;
+        }
+    };
+
+    double y0 = 1;
+    xend = dopri5::solve_at(xs.begin(), xs.end(),
+                            xbreak.begin(), xbreak.end(),
+                            y0, func, ys.begin());
+
+    for (int i = 0; i < xend - xs.begin(); ++i) {
+        std::cout << "x[" << i << "] = " << xs[i]
+                  << "; y[" << i << "] = {"
+                  << ys[i]
+                  << "}" << std::endl;
+    }
+}
+
+
+//
 // Entry point
 //
 
@@ -201,5 +239,6 @@ int main()
     example_array_reverse();
     example_eigen();
     example_functors();
+    example_breakpoints();
     return 0;
 }
