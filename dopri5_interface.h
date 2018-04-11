@@ -340,7 +340,7 @@ namespace dopri5 {
                             auto& value,
                             const dense_solution<Vector>& sol)
                 {
-                    while (m_xpos < m_xend) {
+                    while (m_xpos != m_xend) {
                         if ((xold <= x && !(*m_xpos <= x)) ||
                             (xold >= x && !(*m_xpos >= x))) {
                             break;
@@ -349,7 +349,7 @@ namespace dopri5 {
                         ++m_xpos;
                         ++m_ypos;
                     }
-                    return !(m_xpos < m_xend);
+                    return !(m_xpos != m_xend);
                 }
 
             const XIterator end() const { return m_xpos; }
@@ -398,8 +398,8 @@ namespace dopri5 {
         // Integrate over breakpoints
         XIterator2 xbreak_pos(xbreak_begin);
 
-        while (xbreak_pos < xbreak_end && ((ascending && *xbreak_pos < x_final) ||
-                                           (!ascending && *xbreak_pos > x_final))) {
+        while (xbreak_pos != xbreak_end && ((ascending && *xbreak_pos < x_final) ||
+                                            (!ascending && *xbreak_pos > x_final))) {
             if ((ascending && *xbreak_pos <= x) ||
                     (!ascending && *xbreak_pos >= x)) {
                 ++xbreak_pos;
