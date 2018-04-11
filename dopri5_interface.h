@@ -363,6 +363,10 @@ namespace dopri5 {
     //!     i.e. ascending if integrating from left to right, and descending if
     //!     integrating from right to left.
     //! \param xend  End for iterator of x-coordinates.
+    //! \param xbreak_begin  Start for iterator containing critical
+    //!     x-breakpoints. They must be sorted in the order encountered during
+    //!     the integration.
+    //! \param xbreak_end  End for iterator containing critical x-breakpoints.
     //! \param y0  Initial value of the solution vector.
     //!     Note that this value is modified by the routine.
     //! \param fcn  Callback function `f(double x, ConstVector& y, Vector& dy)`
@@ -370,10 +374,6 @@ namespace dopri5 {
     //! \param ybegin  Start for iterator to store solutions.
     //! \param params  Solver parameters.
     //! \param status  Final exit status (ignored if null).
-    //! \param xbreak_begin  Start for iterator containing critical
-    //!     x-breakpoints. They must be sorted in the order encountered during
-    //!     the integration.
-    //! \param xbreak_end  End for iterator containing critical x-breakpoints.
     //! \return Iterator pointing after the last stored x-value.
     template <typename Vector, typename XIterator, typename YIterator,
               typename XIterator2,
@@ -426,6 +426,7 @@ namespace dopri5 {
         return solout.end();
     }
 
+    //! Solve a differential equation, storing the solution in an iterable.
     template <typename Vector, typename XIterator, typename YIterator,
               typename Fcn = typename detail::default_types<Vector>::func_type>
     inline XIterator solve_at(XIterator xbegin, XIterator xend,

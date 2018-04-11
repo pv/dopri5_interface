@@ -27,6 +27,7 @@ Contents
 
 - [dopri5::solve(x0, xend, func, solout)](@ref dopri5::solve)
 - [dopri5::solve_at(xbegin, xend, ybegin, func)](@ref dopri5::solve_at)
+- [dopri5::solve_at(xbegin, xend, xbreak_begin, xbreak_end, ybegin, func)](@ref dopri5::solve_at)
 - [dopri5::dense_solution](@ref dopri5::dense_solution),
   [dopri5::dense_solution::operator()](@ref dopri5::dense_solution::operator() ),
   [dopri5::dense_solution::get](@ref dopri5::dense_solution::get),
