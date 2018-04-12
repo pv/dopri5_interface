@@ -516,6 +516,7 @@ C ------- STIFFNESS DETECTION
          XOLD=X
          X=XPH
          IF (IOUT.NE.0) THEN
+            IF (LAST) X=XEND
             HOUT=H
             CALL SOLOUT(NACCPT+1,XOLD,X,Y,N,CONT,ICOMP,NRD,
      &                  RPAR,IPAR,IRTRN,HOUT)
